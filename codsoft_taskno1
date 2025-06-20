@@ -1,0 +1,42 @@
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+import seaborn as sns
+from sklearn.preprocessing import LabelEncoder
+from sklearn.model_selection import train_test_split
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.metrics import accuracy_score,classification_report
+
+filename="C:\\Users\\ajayr\\Downloads\\IRIS.csv"
+df=pd.read_csv(filename)
+sns.histplot(df,bins=20)
+plt.title("Histogram:")
+plt.show()
+
+sns.pairplot(df,hue='species')
+plt.suptitle("Iris Flower Feature Visualization", y=1.02)
+plt.show()
+
+le=LabelEncoder()
+df['species_encoder']=le.fit_transform(df['species'])
+
+print("\nLabel Mapping:")
+for i, label in enumerate(le.classes_):
+    print(f"{i} → {label}")
+
+X=df.drop(['species','species_encoder'],axis=1)
+y=df['species_encoder']
+X_train,X_test,y_train,y_test=train_test_split(X,y,test_size=0.3,random_state=1)
+
+exmodel=KNeighborsClassifier(n_neighbors=3)
+exmodel.fit(X_train,y_train)
+y_predict=exmodel.predict(X_test)
+print("\n Accuracy:",accuracy_score(y_test,y_predict))
+print("\n Classification Report:")
+print(classification_report(y_test,y_predict,target_names=[str(c) for c in le.classes_]))
+
+act_val=le.inverse_transform(y_test)
+pre_val=le.inverse_transform(y_predict)
+result=pd.DataFrame({'ACTUAL':act_val,'PREDICTED':pre_val})
+print("\n Predicted Comparison:")
+print(result)
