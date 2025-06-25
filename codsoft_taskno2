@@ -1,0 +1,43 @@
+import pandas as pd
+import seaborn as sns
+import matplotlib.pyplot as plt
+from sklearn.preprocessing import LabelEncoder
+from sklearn.model_selection import train_test_split
+from sklearn.linear_model import LogisticRegression
+from sklearn.metrics import accuracy_score,classification_report,confusion_matrix
+
+df=pd.read_csv("C:/users/ajayr/OneDrive/Documents/Titanic-Dataset.csv")
+df.head()
+
+print(df.info())
+print(df.describe())
+print(df.isnull().sum())
+
+df['Age'].fillna(df['Age'].median(),inplace=True)
+df['Embarked'].fillna(df['Embarked'].mode()[0],inplace=True)
+print(df.isnull().sum())
+
+le=LabelEncoder()
+df['Sex']=le.fit_transform(df['Sex'])
+df['Embarked']=le.fit_transform(df['Embarked'])
+
+X=df[['Pclass','Sex','Age','SibSp','Parch','Fare','Embarked']]
+y=df['Survived']
+X_train,X_test,y_train,y_test=train_test_split(X,y,test_size=0.2,random_state=1)
+
+model=LogisticRegression(max_iter=100)
+model.fit(X_train,y_train)
+
+y_predict=model.predict(X_test)
+print("\n Accuracy:",accuracy_score(y_test,y_predict))
+print("\n Classification Report:\n",classification_report(y_test,y_predict))
+print("Confusion Matrix:\n ",confusion_matrix(y_test,y_predict))
+
+sns.heatmap(confusion_matrix(y_test, y_predict), annot=True, fmt='d', cmap='Greens')
+plt.title("Confusion Matrix")
+plt.show()
+
+importance = pd.Series(model.coef_[0], index=X.columns)
+importance.sort_values(ascending=True).plot(kind='barh', color='skyblue')
+plt.title("Feature Importance (Logistic Regression Coefficients)")
+plt.show()
